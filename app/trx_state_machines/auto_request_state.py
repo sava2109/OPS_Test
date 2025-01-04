@@ -16,6 +16,7 @@ async def check_trx(ticket_data: PostgresTicketRequest, bot) -> None:
         print(f"Couldn't check trx request: {ticket_data.id}")
         return
     if pg_data.state == PG_TRX_STATUS.COMPLETED.value:
+        print('complete')
         # Change DB Request status to CLOSE
         ticket_data.closed = True
         db_patch_result = POSTGRES.close_ticket(ticket_data.id, True)
@@ -32,8 +33,11 @@ async def check_trx(ticket_data: PostgresTicketRequest, bot) -> None:
         #when ticket was created and if it more then 1hour ago, do= > more cases
         # Get the current time
         current_time = datetime.now()
+        current_date = datetime.strptime(str(ticket_data.created_at), '%Y-%m-%d %H:%M:%S.%f')
+        print(current_date)
 		# Check if the created_date is more than 1 hour ago and if the closed is false
-        if ticket_data.created_at < current_time - timedelta(hours=1) and not ticket_data.closed :
+        print(current_date < current_time - timedelta(hours=1))
+        if current_date < current_time - timedelta(hours=1) and not ticket_data.closed :
             await CLICKUP_CLIENT.update_task_tag(ticket_data.cu_task_id)
         return
         

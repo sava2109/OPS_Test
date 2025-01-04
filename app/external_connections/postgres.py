@@ -260,7 +260,7 @@ class Postgres:
         cur = conn.cursor()
 
         query = """
-        INSERT INTO tickets (shop_id, shop_support_message_id, 
+        INSERT INTO ticket_test (shop_id, shop_support_message_id, 
         provider_id, provider_support_message_id, 
         trx_id, cu_task_id, 
         closed, manual, message_full_text, created_at)
@@ -289,7 +289,7 @@ class Postgres:
 
         cur = conn.cursor()
 
-        query = "SELECT * FROM tickets "
+        query = "SELECT * FROM ticket_test "
         cur.execute(query)
 
         result = cur.fetchall()
@@ -314,7 +314,6 @@ class Postgres:
                                            message_full_text=row[9],
                                            created_at=row[10])
             tickets.append(ticket)
-
         return tickets
     
     def get_all_tickets(self, closed: bool) -> list[PostgresTicketRequest] | None:

@@ -66,8 +66,8 @@ class ClickUpClient:
 
         response = requests.post(url, files=file, headers=headers)
 
-        if delete_attachment:
-            os.remove(attachment)
+        # if delete_attachment:
+        #     os.remove(attachment)
 
         return response.json()
 
@@ -87,34 +87,27 @@ class ClickUpClient:
         }
 
         response = requests.put(url, json=payload, headers=headers, params=query)
-    async def update_task_tag(self, task_id, new_tag="Manual"):
-        url = f"{self.base_url}/task/{task_id}"
-
+    async def update_task_tag(self, task_id, new_tag="manual",assignee_id=89657945):
+        tags_url = f"{self.base_url}/task/{task_id}/tag/{new_tag}"
+        
         headers = {
             "Content-Type": "application/json",
-            "Authorization": self.token
+            "Authorization": self.token,
+            "accept": "application/json"
         }
-
-        # Fetch the existing tags for the task
-        get_response = requests.get(url, headers=headers)
-        if get_response.status_code != 200:
-            raise Exception(f"Failed to retrieve task {task_id}: {get_response.text}")
-
-        task_data = get_response.json()
-        existing_tags = task_data.get("tags", [])
-
-        # Add the new tag if it's not already in the tags
-        if new_tag not in existing_tags:
-            existing_tags.append(new_tag)
-
-        # Update the task with the modified tags
         payload = {
-            "tags": existing_tags
+         "assignees": {
+                 "add":[89657945]
         }
-        response = requests.put(url, json=payload, headers=headers)
-        if response.status_code != 200:
-            raise Exception(f"Failed to update task {task_id}: {response.text}")
+        }
+        # Fetch the existing tags for the task
+        post_response = requests.post(tags_url, headers=headers)
+        if post_response.status_code != 200:
+            raise Exception(f"Failed to retrieve task {task_id}: {post_response.text}")
 
-        return response.json()
+        put_respone = requests.put( f"{self.base_url}/task/{task_id}", headers=headers,json=payload)    
+        print(put_respone.status_code)
+        
+        return post_response.json()
 
 CLICKUP_CLIENT = ClickUpClient()

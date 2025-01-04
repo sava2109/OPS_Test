@@ -29,8 +29,12 @@ async def state_COMPLETED(message: Message, trx_details: PGAnswer, shop: Postgre
     return True
 async def state_DECLINED(message: Message, trx_details: PGAnswer, shop: PostgresShop, message_full_text:str) -> bool:
     terminal_id = trx_details.terminal.split('_')[-1]
-    match int(terminal_id):
+    print(f"Terminallllllllllll: {terminal_id}")
+    match terminal_id:
         case 666:
+            success = await apm666.beh_send_auto_ticket(message, trx_details, shop, message_full_text)
+            return success
+        case 'test':
             success = await apm666.beh_send_auto_ticket(message, trx_details, shop, message_full_text)
             return success
         case 701:

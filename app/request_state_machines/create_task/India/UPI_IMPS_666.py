@@ -17,7 +17,8 @@ async def beh_send_auto_ticket(message: Message, trx_details: PGAnswer, shop: Po
         return False
 
     # Send message to provider chat
-    terminal_index = int(trx_details.terminal.split('_')[-1])
+    # terminal_index = int(trx_details.terminal.split('_')[-1])
+    terminal_index = 666
     provider = POSTGRES.get_provider_by_terminal_index(terminal_index)
     if provider == None:
         await message.reply("@Serggiant, I couldn't solve it")
@@ -31,7 +32,7 @@ async def beh_send_auto_ticket(message: Message, trx_details: PGAnswer, shop: Po
     file = await message.bot.get_file(screenshot_url)
     if not os.path.exists("tmp/img/"):
         os.makedirs("tmp/img/")
-    file_local_path = f"tmp/img/{trx_details.trx_id}.jpg"
+    file_local_path = f"tmp/img/ss{trx_details.trx_id}.jpg"
     await message.bot.download_file(file.file_path, file_local_path)
 
     cu_data = await CLICKUP_CLIENT.create_auto_task(list_id=provider.cu_list_id, attachment=file_local_path,

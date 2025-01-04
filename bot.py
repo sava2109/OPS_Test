@@ -11,7 +11,7 @@ from app.trx_state_machines.trx_state_machine import TRX_STATE_MACHINE, Trx_Stat
 
 async def main():
     load_dotenv()
-    bot = Bot(token=os.getenv('TOKEN'))
+    bot = Bot(token=os.getenv('TOKEN_DEV'))
     await asyncio.gather(
         run_bot(bot),
         run_trx_state_machine(bot)
