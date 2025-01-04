@@ -30,26 +30,26 @@ class Trx_State_Machine:
     async def update(self) -> None:
         # first we need to remove "closed" contraint to get all tickets whatever their status
         # getting all tickets
-        # all_tickets = POSTGRES.get_all_tickets_v2()
-        # if all_tickets is None: return
-        # if len(all_tickets) < 1: return
-        # for ticket in all_tickets:
-        #     if ticket.manual == False:
-        #         await auto_request_state.check_trx(ticket_data=ticket, bot=self.bot)
-        #         continue
-        #     elif ticket.manual == True:
-        #         await manual_request_state.check_trx(ticket_data=ticket, bot=self.bot)
-        #         continue
-        active_tickets = POSTGRES.get_all_tickets(closed=False)
-        if active_tickets is None: return
-        if len(active_tickets) < 1: return
-        for ticket in active_tickets:
+        all_tickets = POSTGRES.get_all_tickets_v2()
+        if all_tickets is None: return
+        if len(all_tickets) < 1: return
+        for ticket in all_tickets:
             if ticket.manual == False:
                 await auto_request_state.check_trx(ticket_data=ticket, bot=self.bot)
                 continue
             elif ticket.manual == True:
                 await manual_request_state.check_trx(ticket_data=ticket, bot=self.bot)
                 continue
+        # active_tickets = POSTGRES.get_all_tickets(closed=False)
+        # if active_tickets is None: return
+        # if len(active_tickets) < 1: return
+        # for ticket in active_tickets:
+        #     if ticket.manual == False:
+        #         await auto_request_state.check_trx(ticket_data=ticket, bot=self.bot)
+        #         continue
+        #     elif ticket.manual == True:
+        #         await manual_request_state.check_trx(ticket_data=ticket, bot=self.bot)
+        #         continue
 
 
 TRX_STATE_MACHINE = None

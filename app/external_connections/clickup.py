@@ -87,34 +87,34 @@ class ClickUpClient:
         }
 
         response = requests.put(url, json=payload, headers=headers, params=query)
+    async def update_task_tag(self, task_id, new_tag="Manual"):
+        url = f"{self.base_url}/task/{task_id}"
 
-	# async def update_task_tag(self, task_id, new_tag="Manual"):
-	# 	url = f"{self.base_url}/task/{task_id}"
+        headers = {
+            "Content-Type": "application/json",
+            "Authorization": self.token
+        }
 
-	# 	headers = {
-	# 		"Content-Type": "application/json",
-	# 		"Authorization": self.token
-	# 	}
-		
-	# 	# Fetch the existing tags for the task
-	# 	get_response = requests.get(url, headers=headers)
-	# 	if get_response.status_code != 200:
-	# 		raise Exception(f"Failed to retrieve task {task_id}: {get_response.text}")
-		
-	# 	task_data = get_response.json()
-	# 	existing_tags = task_data.get("tags", [])
-		
-	# 	# Add the new tag if it's not already in the tags
-	# 	if new_tag not in existing_tags:
-	# 		existing_tags.append(new_tag)
-		
-	# 	# Update the task with the modified tags
-	# 	payload = {
-	# 		"tags": existing_tags
-	# 	}
-	# 	response = requests.put(url, json=payload, headers=headers)
-	# 	if response.status_code != 200:
-	# 		raise Exception(f"Failed to update task {task_id}: {response.text}")
-		
-	# 	return response.json()
+        # Fetch the existing tags for the task
+        get_response = requests.get(url, headers=headers)
+        if get_response.status_code != 200:
+            raise Exception(f"Failed to retrieve task {task_id}: {get_response.text}")
+
+        task_data = get_response.json()
+        existing_tags = task_data.get("tags", [])
+
+        # Add the new tag if it's not already in the tags
+        if new_tag not in existing_tags:
+            existing_tags.append(new_tag)
+
+        # Update the task with the modified tags
+        payload = {
+            "tags": existing_tags
+        }
+        response = requests.put(url, json=payload, headers=headers)
+        if response.status_code != 200:
+            raise Exception(f"Failed to update task {task_id}: {response.text}")
+
+        return response.json()
+
 CLICKUP_CLIENT = ClickUpClient()

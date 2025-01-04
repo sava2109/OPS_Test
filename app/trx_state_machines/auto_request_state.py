@@ -1,5 +1,5 @@
 import asyncio, datetime
-# from datetime import datetime, timedelta
+from datetime import datetime, timedelta
 from aiogram.types import ReactionTypeEmoji
 
 from app.external_connections.postgres import POSTGRES, PostgresTicketRequest
@@ -31,12 +31,13 @@ async def check_trx(ticket_data: PostgresTicketRequest, bot) -> None:
     else:
         #when ticket was created and if it more then 1hour ago, do= > more cases
         # Get the current time
-		# current_time = datetime.now()
+        current_time = datetime.now()
 		# Check if the created_date is more than 1 hour ago and if the closed is false
-		# if ticket_data.created_at < current_time - timedelta(hours=1) and not ticket_data.closed :
-        # 	CLICKUP_CLIENT.update_task_tag(ticket_data.cu_task_id)
+        if ticket_data.created_at < current_time - timedelta(hours=1) and not ticket_data.closed :
+            await CLICKUP_CLIENT.update_task_tag(ticket_data.cu_task_id)
+        return
+        
         #task more then 1 hour- change status to "manual" (mark in the database bool, put in cluck up tag "MANUAL" and assign Sergei to the task)
         #case 1: no replyies,  no reaction no reply ---ping message "CHECK"
         #case 2: provider says 'not our vpa,ugabuga...', forward for now new chat Egor Sergei and me
         #case 3: 
-        return
