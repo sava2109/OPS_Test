@@ -21,11 +21,11 @@ class ClickUpClient:
     def create_manual_task(self, list_id, attachment, pg_trx_id, description:str = None):
         return self.create_task(list_id=list_id, attachment=attachment, pg_trx_id=pg_trx_id, description=description, task_status=CU_TaskStatus.TO_DO)
 
-    async def create_auto_task(self, list_id, attachment, pg_trx_id, description:str = None):
+    async def create_auto_task(self, list_id, attachments, pg_trx_id, description:str = None):
         tags = ["auto"]
-        return await self.create_task(list_id=list_id, attachment=attachment, pg_trx_id=pg_trx_id, description=description, task_status=CU_TaskStatus.IN_PROGRESS, tags=tags)
+        return await self.create_task(list_id=list_id, attachments=attachments, pg_trx_id=pg_trx_id, description=description, task_status=CU_TaskStatus.IN_PROGRESS, tags=tags)
 
-    async def create_task(self, list_id, attachment, pg_trx_id, description:str=None,
+    async def create_task(self, list_id, attachments, pg_trx_id, description:str=None,
                           task_status:CU_TaskStatus=CU_TaskStatus.TO_DO, tags:[str]=None):
         url = f"{self.base_url}/list/{list_id}/task"
 
@@ -50,27 +50,44 @@ class ClickUpClient:
         response = requests.post(url, json=payload, headers=headers, params=query)
         data = response.json()
 
-        if attachment and attachment != "":
-            self.add_attachment(data['id'], attachment, True)
+        # Attach multiple files
+        if attachments and isinstance(attachments, list):
+            for attachment in attachments:
+                self.add_attachment(data['id'], attachment, True)
 
         return data
 
     def add_attachment(self, task_id, attachment, delete_attachment=False):
         url = f"{self.base_url}/task/{task_id}/attachment"
         headers = {
-            "Authorization": self.token
-        }
-        file = {
-            "attachment": (attachment, open(attachment, 'rb'))
+        "Authorization": self.token
         }
 
-        response = requests.post(url, files=file, headers=headers)
+    # Ensure the file exists
+        if not os.path.exists(attachment):
+            raise FileNotFoundError(f"The file {attachment} does not exist.")
 
-        # if delete_attachment:
-        #     os.remove(attachment)
+        try:
+            with open(attachment, 'rb') as file:
+                files = {
+                    "attachment": (os.path.basename(attachment), file)
+                }
+                response = requests.post(url, files=files, headers=headers)
 
-        return response.json()
+        # Check for successful response
+            if response.status_code != 200:
+                raise Exception(f"Failed to upload attachment: {response.text}")
 
+        # Optionally delete the file
+            # if delete_attachment:
+            #     os.remove(attachment)
+
+            return response.json()
+        except Exception as e:
+        # Handle errors gracefully
+            print(f"Error uploading attachment: {e}")
+            raise
+    
     async def update_task_status(self, task_id:str, task_status:CU_TaskStatus=CU_TaskStatus.IN_PROGRESS) -> None:
         url = f"{self.base_url}/task/{task_id}"
 

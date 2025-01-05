@@ -9,14 +9,17 @@ from app.external_connections.ops_pa import PG_PAYMENT_TYPE, PG_TRX_STATUS
 from app.external_connections.clickup import CLICKUP_CLIENT, CU_TaskStatus
 
 async def check_trx(ticket_data: PostgresTicketRequest, bot) -> None:
+    current_time = datetime.now()
+    current_date = datetime.strptime(str(ticket_data.created_at), '%Y-%m-%d %H:%M:%S.%f')
     shop_data = POSTGRES.get_shop_by_id(ticket_data.shop_id)
     shop_api_key = POSTGRES.get_shop_api_key(shop_data.pg_api_key_id).pg_api_key
     pg_data = ops_pa.check_status(shop_api_key=shop_api_key, trx_id=ticket_data.trx_id)
+    
     if pg_data == None:
         print(f"Couldn't check trx request: {ticket_data.id}")
         return
+    
     if pg_data.state == PG_TRX_STATUS.COMPLETED.value:
-        print('complete')
         # Change DB Request status to CLOSE
         ticket_data.closed = True
         db_patch_result = POSTGRES.close_ticket(ticket_data.id, True)
@@ -28,15 +31,16 @@ async def check_trx(ticket_data: PostgresTicketRequest, bot) -> None:
         await bot.send_message(chat_id=shop_data.support_chat_id, text=f'New transaction status: COMPLETED\n\n{ticket_data.message_full_text}', reply_to_message_id=ticket_data.shop_message_id)
         # TASK: close clickup
         await CLICKUP_CLIENT.update_task_status(ticket_data.cu_task_id, CU_TaskStatus.COMPLETE)
+        
+		# Check if the created_date is more than 30 days ago and if the closed is true
+        if current_date < current_time - timedelta(days=30) and ticket_data.closed :
+            POSTGRES.delete_old_ticket(ticket_data.cu_task_id)
+            print(f'ticket {ticket_data} is closed for more than 30days ==> Deleted')
         return
+    
     else:
         #when ticket was created and if it more then 1hour ago, do= > more cases
-        # Get the current time
-        current_time = datetime.now()
-        current_date = datetime.strptime(str(ticket_data.created_at), '%Y-%m-%d %H:%M:%S.%f')
-        print(current_date)
 		# Check if the created_date is more than 1 hour ago and if the closed is false
-        print(current_date < current_time - timedelta(hours=1))
         if current_date < current_time - timedelta(hours=1) and not ticket_data.closed :
             await CLICKUP_CLIENT.update_task_tag(ticket_data.cu_task_id)
         return

@@ -6,6 +6,7 @@ class PostgresApiKey:
     def __init__(self, pg_id: int = None, pg_api_key: str = None):
         self.pg_id = pg_id
         self.pg_api_key = pg_api_key
+
 class PostgresShop:
     def __init__(self, id: int = None, merchant_name: str = None, shop_name: str = None,
                  management_chat_id: int = None, finance_chat_id: int = None, support_chat_id: int = None, notification_chat_id: int = None,
@@ -18,6 +19,7 @@ class PostgresShop:
         self.support_chat_id = support_chat_id
         self.notification_chat_id = notification_chat_id
         self.pg_api_key_id = pg_api_key_id
+
 class PostgresProvider:
     def __init__(self, id: int = None, provider_name: str = None, terminal_name:str = None, terminal_index: int = None,
                  cu_list_id: str = None, support_chat_id: int = None):
@@ -27,6 +29,7 @@ class PostgresProvider:
         self.terminal_index = terminal_index
         self.cu_list_id = cu_list_id
         self.support_chat_id = support_chat_id
+
 class PostgresTicketRequest:
     def __init__(self, id: int = None, shop_id: int = None, shop_message_id: int = None,
                  provider_id: int = None, provider_message_id: int = None,
@@ -46,16 +49,32 @@ class PostgresTicketRequest:
         self.manual = manual
         self.created_at = created_at
         self.message_full_text = message_full_text
+
 class Postgres:
-    def create_shop(self, merchant_name:str, shop_name:str, support_chat_id:int, pg_api_key:int) -> None:
+    def __init__(self):
         load_dotenv()
-        conn = psycopg2.connect(
-            dbname=os.getenv('ESQL_MAIN_DB'),
-            user=os.getenv('ESQL_USER'),
-            password=os.getenv('ESQL_PASS'),
-            host=os.getenv('ESQL_HOST'),
-            port=os.getenv('ESQL_PORT')
-        )
+        self.db_params = {
+            'dbname': os.getenv('ESQL_MAIN_DB'),
+            'user': os.getenv('ESQL_USER'),
+            'password': os.getenv('ESQL_PASS'),
+            'host': os.getenv('ESQL_HOST'),
+            'port': os.getenv('ESQL_PORT')
+        }
+        self.conn= None
+
+    def _get_connection(self):
+        if self.conn is None or self.conn.closed:
+            self.conn = psycopg2.connect(**self.db_params)
+        return self.conn
+
+    def _close_connection(self):
+        if self.conn and not self.conn.closed:
+            self.conn.close()
+            self.conn = None
+    
+    def create_shop(self, merchant_name:str, shop_name:str, support_chat_id:int, pg_api_key:int) -> None:
+        
+        conn = self._get_connection()
 
         cur = conn.cursor()
 
@@ -67,18 +86,11 @@ class Postgres:
 
         conn.commit()
         cur.close()
-        conn.close()
-
         return
+    
     def get_shops_by_support_chat_id(self, support_chat_id:int) -> list[PostgresShop] | None:
-        load_dotenv()
-        conn = psycopg2.connect(
-            dbname=os.getenv('ESQL_MAIN_DB'),
-            user=os.getenv('ESQL_USER'),
-            password=os.getenv('ESQL_PASS'),
-            host=os.getenv('ESQL_HOST'),
-            port=os.getenv('ESQL_PORT')
-        )
+        
+        conn = self._get_connection()
 
         cur = conn.cursor()
 
@@ -88,7 +100,6 @@ class Postgres:
         result = cur.fetchall()
 
         cur.close()
-        conn.close()
         print(f"chat: {support_chat_id}, res: {result}")
         if result == None:
             return None
@@ -106,16 +117,10 @@ class Postgres:
             shops.append(shop)
 
         return shops
+    
     def get_shop_by_id(self, shop_id:int) -> PostgresShop | None:
-        load_dotenv()
-        conn = psycopg2.connect(
-            dbname=os.getenv('ESQL_MAIN_DB'),
-            user=os.getenv('ESQL_USER'),
-            password=os.getenv('ESQL_PASS'),
-            host=os.getenv('ESQL_HOST'),
-            port=os.getenv('ESQL_PORT')
-        )
-
+        
+        conn = self._get_connection()
         cur = conn.cursor()
 
         query = "SELECT * FROM shops WHERE id = %s"
@@ -124,7 +129,7 @@ class Postgres:
         result = cur.fetchall()
 
         cur.close()
-        conn.close()
+        
 
         if result == None:
             return None
@@ -141,14 +146,8 @@ class Postgres:
             return shop
 
     def create_shop_api_key(self, shop_name:str, pg_id:int, pg_api_key:str) -> None:
-        load_dotenv()
-        conn = psycopg2.connect(
-            dbname=os.getenv('ESQL_KEYS_DB'),
-            user=os.getenv('ESQL_USER'),
-            password=os.getenv('ESQL_PASS'),
-            host=os.getenv('ESQL_HOST'),
-            port=os.getenv('ESQL_PORT')
-        )
+        
+        conn = self._get_connection()
 
         cur = conn.cursor()
 
@@ -160,18 +159,13 @@ class Postgres:
 
         conn.commit()
         cur.close()
-        conn.close()
+        
 
         return
+    
     def get_shop_api_key(self, shop_key_ref:int) -> PostgresApiKey | None:
-        load_dotenv()
-        conn = psycopg2.connect(
-            dbname=os.getenv('ESQL_KEYS_DB'),
-            user=os.getenv('ESQL_USER'),
-            password=os.getenv('ESQL_PASS'),
-            host=os.getenv('ESQL_HOST'),
-            port=os.getenv('ESQL_PORT')
-        )
+        
+        conn = self._get_connection()
 
         cur = conn.cursor()
 
@@ -181,7 +175,7 @@ class Postgres:
         result = cur.fetchall()
 
         cur.close()
-        conn.close()
+        
 
         if result == None:
             return None
@@ -193,14 +187,8 @@ class Postgres:
             return answer
 
     def create_provider(self, provider_name:str, terminal_name:str, terminal_index:int, cu_list_id:str, support_chat_id:int) -> None:
-        load_dotenv()
-        conn = psycopg2.connect(
-            dbname=os.getenv('ESQL_MAIN_DB'),
-            user=os.getenv('ESQL_USER'),
-            password=os.getenv('ESQL_PASS'),
-            host=os.getenv('ESQL_HOST'),
-            port=os.getenv('ESQL_PORT')
-        )
+        
+        conn = self._get_connection()
 
         cur = conn.cursor()
 
@@ -212,18 +200,13 @@ class Postgres:
 
         conn.commit()
         cur.close()
-        conn.close()
+        
 
         return
+    
     def get_provider_by_terminal_index(self, terminal_index:int) -> PostgresProvider | None:
-        load_dotenv()
-        conn = psycopg2.connect(
-            dbname=os.getenv('ESQL_MAIN_DB'),
-            user=os.getenv('ESQL_USER'),
-            password=os.getenv('ESQL_PASS'),
-            host=os.getenv('ESQL_HOST'),
-            port=os.getenv('ESQL_PORT')
-        )
+        
+        conn = self._get_connection()
 
         cur = conn.cursor()
 
@@ -233,7 +216,7 @@ class Postgres:
         result = cur.fetchall()
 
         cur.close()
-        conn.close()
+        
 
         if result == None:
             return None
@@ -250,13 +233,7 @@ class Postgres:
     def create_new_ticket_request(self, trx_id: str, shop_data: PostgresShop, shop_mes_id: int, provider_data: PostgresProvider,
                              provider_mes_id: int, cu_task_id: str,
                              is_manual_ticket: bool, message_full_text: str) -> bool:
-        conn = psycopg2.connect(
-            dbname=os.getenv('ESQL_MAIN_DB'),
-            user=os.getenv('ESQL_USER'),
-            password=os.getenv('ESQL_PASS'),
-            host=os.getenv('ESQL_HOST'),
-            port=os.getenv('ESQL_PORT')
-        )
+        conn = self._get_connection()
         cur = conn.cursor()
 
         query = """
@@ -273,19 +250,13 @@ class Postgres:
 
         conn.commit()
         cur.close()
-        conn.close()
+        
 
         return True
-	# get all tickets independantly from the closed value
+    
     def get_all_tickets_v2(self) -> list[PostgresTicketRequest] | None:
-        load_dotenv()
-        conn = psycopg2.connect(
-            dbname=os.getenv('ESQL_MAIN_DB'),
-            user=os.getenv('ESQL_USER'),
-            password=os.getenv('ESQL_PASS'),
-            host=os.getenv('ESQL_HOST'),
-            port=os.getenv('ESQL_PORT')
-        )
+        
+        conn = self._get_connection()
 
         cur = conn.cursor()
 
@@ -295,7 +266,7 @@ class Postgres:
         result = cur.fetchall()
 
         cur.close()
-        conn.close()
+        
 
         if result == None:
             return None
@@ -317,14 +288,8 @@ class Postgres:
         return tickets
     
     def get_all_tickets(self, closed: bool) -> list[PostgresTicketRequest] | None:
-        load_dotenv()
-        conn = psycopg2.connect(
-            dbname=os.getenv('ESQL_MAIN_DB'),
-            user=os.getenv('ESQL_USER'),
-            password=os.getenv('ESQL_PASS'),
-            host=os.getenv('ESQL_HOST'),
-            port=os.getenv('ESQL_PORT')
-        )
+        
+        conn = self._get_connection()
 
         cur = conn.cursor()
 
@@ -334,7 +299,7 @@ class Postgres:
         result = cur.fetchall()
 
         cur.close()
-        conn.close()
+        
 
         if result == None:
             return None
@@ -357,14 +322,8 @@ class Postgres:
         return tickets
 
     def close_ticket(self, ticked_id, closed: bool) -> None:
-        load_dotenv()
-        conn = psycopg2.connect(
-            dbname=os.getenv('ESQL_MAIN_DB'),
-            user=os.getenv('ESQL_USER'),
-            password=os.getenv('ESQL_PASS'),
-            host=os.getenv('ESQL_HOST'),
-            port=os.getenv('ESQL_PORT')
-        )
+        
+        conn = self._get_connection()
         cur = conn.cursor()
         query = """
         UPDATE tickets
@@ -376,9 +335,29 @@ class Postgres:
         conn.commit()
 
         cur.close()
-        conn.close()
+        
 
         return True
 
+    def delete_old_ticket(self,ticket_id) -> None:
+        
+        conn = self._get_connection()
+        cur = conn.cursor()
+        query = """
+			DELETE FROM ticket_test
+			WHERE id = %s;
+        """
+
+        cur.execute(query, (ticket_id))
+        conn.commit()
+
+        cur.close()
+        
+
+        return True
+
+    def __del__(self):
+        """Ensure the connection is closed when the object is deleted."""
+        self._close_connection()
 
 POSTGRES = Postgres()
