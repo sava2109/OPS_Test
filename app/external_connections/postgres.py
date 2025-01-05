@@ -60,17 +60,32 @@ class Postgres:
             'host': os.getenv('ESQL_HOST'),
             'port': os.getenv('ESQL_PORT')
         }
+        self.db_params_keys = {
+            'dbname': os.getenv('ESQL_KEYS_DB'),
+            'user': os.getenv('ESQL_USER'),
+            'password': os.getenv('ESQL_PASS'),
+            'host': os.getenv('ESQL_HOST'),
+            'port': os.getenv('ESQL_PORT')
+        }
         self.conn= None
-
+        self.conn_keys = None
     def _get_connection(self):
         if self.conn is None or self.conn.closed:
             self.conn = psycopg2.connect(**self.db_params)
         return self.conn
+    def _get_connection_keys(self):
+        if self.conn_keys is None or self.conn_keys.closed:
+            self.conn_keys = psycopg2.connect(**self.db_params_keys)
+        return self.conn_keys
 
     def _close_connection(self):
         if self.conn and not self.conn.closed:
             self.conn.close()
             self.conn = None
+    def _close_connection_keys(self):
+        if self.conn_keys and not self.conn_keys.closed:
+            self.conn_keys.close()
+            self.conn_keys = None
     
     def create_shop(self, merchant_name:str, shop_name:str, support_chat_id:int, pg_api_key:int) -> None:
         
@@ -147,7 +162,7 @@ class Postgres:
 
     def create_shop_api_key(self, shop_name:str, pg_id:int, pg_api_key:str) -> None:
         
-        conn = self._get_connection()
+        conn = self._get_connection_keys()
 
         cur = conn.cursor()
 
@@ -165,7 +180,7 @@ class Postgres:
     
     def get_shop_api_key(self, shop_key_ref:int) -> PostgresApiKey | None:
         
-        conn = self._get_connection()
+        conn = self._get_connection_keys()
 
         cur = conn.cursor()
 
@@ -348,7 +363,7 @@ class Postgres:
 			WHERE id = %s;
         """
 
-        cur.execute(query, (ticket_id))
+        cur.execute(query, (ticket_id,))
         conn.commit()
 
         cur.close()
@@ -359,5 +374,6 @@ class Postgres:
     def __del__(self):
         """Ensure the connection is closed when the object is deleted."""
         self._close_connection()
+        self._close_connection_keys()
 
 POSTGRES = Postgres()

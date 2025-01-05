@@ -21,21 +21,20 @@ async def check_trx(ticket_data: PostgresTicketRequest, bot) -> None:
     
     if pg_data.state == PG_TRX_STATUS.COMPLETED.value:
         # Change DB Request status to CLOSE
-        ticket_data.closed = True
-        db_patch_result = POSTGRES.close_ticket(ticket_data.id, True)
-        #if db_patch_result == False:
-        #    print(f"AUTO_REQUEST_STATE: became completed, but didn't change in DB: {ticket_data.id}")
+        if not ticket_data.closed:
+            db_patch_result = POSTGRES.close_ticket(ticket_data.id, True)
+            if db_patch_result == False:
+                print(f"AUTO_REQUEST_STATE: became completed, but didn't change in DB: {ticket_data.id}")
 
-        # Answer in merchant chat
-        await bot.set_message_reaction(chat_id=shop_data.support_chat_id, message_id=ticket_data.shop_message_id, reaction=[ReactionTypeEmoji(emoji="👍")])
-        await bot.send_message(chat_id=shop_data.support_chat_id, text=f'New transaction status: COMPLETED\n\n{ticket_data.message_full_text}', reply_to_message_id=ticket_data.shop_message_id)
-        # TASK: close clickup
-        await CLICKUP_CLIENT.update_task_status(ticket_data.cu_task_id, CU_TaskStatus.COMPLETE)
-        
-		# Check if the created_date is more than 30 days ago and if the closed is true
-        if current_date < current_time - timedelta(days=30) and ticket_data.closed :
-            POSTGRES.delete_old_ticket(ticket_data.cu_task_id)
-            print(f'ticket {ticket_data} is closed for more than 30days ==> Deleted')
+            # Answer in merchant chat
+            await bot.set_message_reaction(chat_id=shop_data.support_chat_id, message_id=ticket_data.shop_message_id, reaction=[ReactionTypeEmoji(emoji="👍")])
+            await bot.send_message(chat_id=shop_data.support_chat_id, text=f'New transaction status: COMPLETED\n\n{ticket_data.message_full_text}', reply_to_message_id=ticket_data.shop_message_id)
+            # TASK: close clickup
+            await CLICKUP_CLIENT.update_task_status(ticket_data.cu_task_id, CU_TaskStatus.COMPLETE)
+        else :
+            if current_date < current_time - timedelta(days=30) :
+                POSTGRES.delete_old_ticket(ticket_data.id)
+                print(f'ticket {ticket_data.cu_task_id} is closed for more than 30days ==> Deleted')
         return
     
     else:

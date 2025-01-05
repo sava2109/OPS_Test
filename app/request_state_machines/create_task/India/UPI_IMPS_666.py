@@ -14,9 +14,10 @@ async def beh_send_auto_ticket(message: Message, trx_details: PGAnswer, shop: Po
 
     media_group = []
     local_file_paths = []
-
+    # print(message.photo)
     for idx, photo in enumerate(message.photo):
         screenshot_url = photo.file_id
+
         if not screenshot_url:
             await message.reply("@Serggiant, have a look")
             print(f"No screenshot for image {idx}")
