@@ -60,10 +60,10 @@ class ClickUpClient:
     def add_attachment(self, task_id, attachment, delete_attachment=False):
         url = f"{self.base_url}/task/{task_id}/attachment"
         headers = {
-        "Authorization": self.token
+        "Authorization": self.token,
+        "Content-Type": "multipart/form-data"
         }
 
-    # Ensure the file exists
         if not os.path.exists(attachment):
             raise FileNotFoundError(f"The file {attachment} does not exist.")
 
@@ -74,7 +74,6 @@ class ClickUpClient:
                 }
                 response = requests.post(url, files=files, headers=headers)
 
-        # Check for successful response
             if response.status_code != 200:
                 raise Exception(f"Failed to upload attachment: {response.text}")
 
@@ -84,7 +83,6 @@ class ClickUpClient:
 
             return response.json()
         except Exception as e:
-        # Handle errors gracefully
             print(f"Error uploading attachment: {e}")
             raise
     

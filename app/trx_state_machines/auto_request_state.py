@@ -42,6 +42,7 @@ async def check_trx(ticket_data: PostgresTicketRequest, bot) -> None:
 		# Check if the created_date is more than 1 hour ago and if the closed is false
         if current_date < current_time - timedelta(hours=1) and not ticket_data.closed :
             await CLICKUP_CLIENT.update_task_tag(ticket_data.cu_task_id)
+            POSTGRES.activate_ticket_manual_tag(ticket_data.id)
         return
         
         #task more then 1 hour- change status to "manual" (mark in the database bool, put in cluck up tag "MANUAL" and assign Sergei to the task)

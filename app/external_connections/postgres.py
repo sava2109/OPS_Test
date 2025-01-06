@@ -371,6 +371,52 @@ class Postgres:
 
         return True
 
+    def get_provider_by_terminal_name(self, terminal_name:int) -> PostgresProvider | None:
+        
+        conn = self._get_connection()
+
+        cur = conn.cursor()
+
+        query = "SELECT * FROM providers WHERE terminal_name = %s"
+        cur.execute(query, (terminal_name,))
+
+        result = cur.fetchall()
+
+        cur.close()
+        
+
+        if result == None:
+            return None
+
+        return result[0][3] if result else None
+    
+    def activate_ticket_manual_tag(self, ticket_id) -> bool:
+        conn = self._get_connection()
+        cur = conn.cursor()
+        
+        try:
+            query = """
+                UPDATE ticket_test
+                SET manual = true
+                WHERE id = %s
+                RETURNING id;
+            """
+
+            cur.execute(query, (ticket_id,))
+            updated_row = cur.fetchone()
+            conn.commit()
+            
+            success = updated_row is not None
+            return success
+
+        except Exception as e:
+            conn.rollback()
+            raise e
+        
+        finally:
+            cur.close()
+            conn.close()
+        
     def __del__(self):
         """Ensure the connection is closed when the object is deleted."""
         self._close_connection()
