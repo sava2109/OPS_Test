@@ -11,15 +11,31 @@ from handlers.setup_handler import router as setup_router
 from app.trx_state_machines.trx_state_machine import TRX_STATE_MACHINE, Trx_State_Machine
 from app.periodic_tests.ticket_reaction_reply import check_pending_messages
 from app.periodic_tests.terminal_balance import check_balance
+from app.periodic_tests.clicup_tickets import clickup_State_Machine
 TRX_STATE_MACHINE = Trx_State_Machine()
-async def routine_checks(bot):
+CLICKUP_STATE_MACHINE = clickup_State_Machine()
+async def routine_checks_month(bot):
+
+    while True:
+        try:
+            await CLICKUP_STATE_MACHINE.update()
+        except Exception as e:
+            print(f"Error in hourly task: {e}")
+        now = datetime.now()
+        next_hour = now.replace(minute=0, second=0, microsecond=0)
+        if now >= next_hour:
+            next_hour = next_hour.replace(hour=next_hour.month + 1)
+        
+        wait_time = (next_hour - now).total_seconds()
+        await asyncio.sleep(wait_time)
+async def routine_checks_hour(bot):
 
     while True:
         try:
             print(f"Running hourly task at {datetime.now()} of Checking Tickets, bot Messages , Terminal Balances")
-            await TRX_STATE_MACHINE.update()
+            await CLICKUP_STATE_MACHINE.update()
             await check_balance(bot)
-            await check_pending_messages(bot)
+            # await check_pending_messages(bot)
         except Exception as e:
             print(f"Error in hourly task: {e}")
         now = datetime.now()

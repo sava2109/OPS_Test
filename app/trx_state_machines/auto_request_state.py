@@ -19,6 +19,7 @@ async def check_trx(ticket_data: PostgresTicketRequest, bot) -> None:
         return
     
     if pg_data.state == PG_TRX_STATUS.COMPLETED.value:
+        print('yes')
         # Change DB Request status to CLOSE
         if not ticket_data.closed:
             db_patch_result = POSTGRES.close_ticket(ticket_data.id, True)
@@ -31,7 +32,9 @@ async def check_trx(ticket_data: PostgresTicketRequest, bot) -> None:
             # TASK: close clickup
             await CLICKUP_CLIENT.update_task_status(ticket_data.cu_task_id, CU_TaskStatus.COMPLETE)
         else :
+            print('Ticket is already closed')
             if current_date < current_time - timedelta(days=30) :
+                print('here')
                 POSTGRES.delete_old_ticket(ticket_data.id)
                 print(f'ticket {ticket_data.cu_task_id} is closed for more than 30days ==> Deleted')
         return

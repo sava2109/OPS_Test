@@ -61,7 +61,7 @@ class ClickUpClient:
         url = f"{self.base_url}/task/{task_id}/attachment"
         headers = {
         "Authorization": self.token,
-        "Content-Type": "multipart/form-data"
+        # "Content-Type": "multipart/form-data"
         }
 
         if not os.path.exists(attachment):
