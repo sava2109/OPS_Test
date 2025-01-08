@@ -140,7 +140,7 @@ class Postgres:
         try:
             query = """
                 SELECT terminal_id, pg_api_key 
-                FROM shops_keys
+                FROM shop_keys
                 WHERE terminal_id IS NOT NULL
                 AND pg_api_key IS NOT NULL;
             """
@@ -159,6 +159,7 @@ class Postgres:
         finally:
             cur.close()
             conn.close()
+    
     def get_shop_by_id(self, shop_id:int) -> PostgresShop | None:
         
         conn = self._get_connection()
