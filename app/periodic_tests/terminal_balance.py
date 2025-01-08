@@ -5,7 +5,7 @@ from app.external_connections.postgres import POSTGRES
 from requests.exceptions import RequestException
 
 async def check_balance(bot) -> dict:
-   threshold = 100
+   threshold = 100000
    results = {}
 
    try:
@@ -14,11 +14,10 @@ async def check_balance(bot) -> dict:
            return {}
 
        for terminal_id, api_key in terminals:
-           url = f"https://app.inops.net/api/v1/terminals/getBalance/{terminal_id}?currency=EUR"
+           url = f"https://app.inops.net/api/v1/terminals/getBalance/{terminal_id}"
            headers = {
                'Authorization': f'Bearer {api_key}',
            }
-
            try:
                response = requests.get(
                    url=url,
@@ -29,18 +28,19 @@ async def check_balance(bot) -> dict:
                try:
                    data = response.json()
                    status = int(data.get('status', 0))
-                   
                    if status == 200:
-                        balance = data['result']['balance']['amount']
+                        balance = data['result'][0]['balance']['amount']
                         if balance< threshold:
-                            
                             await bot.send_message(
                             chat_id=-1002323088756,
                             text=f"terminal with ID {terminal_id} has low balance : {balance}",
                             
                             )
+                        else:
+                            print(balance, 'balance is above threshold')
                    else:
                        error_message = data.get('message', 'Unknown error')
+                       print(error_message)
                        results[terminal_id] = {
                            'error': f'API Error: {error_message}'
                        }

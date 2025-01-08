@@ -18,8 +18,8 @@ async def routine_checks(bot):
         try:
             print(f"Running hourly task at {datetime.now()} of Checking Tickets, bot Messages , Terminal Balances")
             await TRX_STATE_MACHINE.update()
-            await check_pending_messages(bot)
             await check_balance(bot)
+            await check_pending_messages(bot)
         except Exception as e:
             print(f"Error in hourly task: {e}")
         now = datetime.now()

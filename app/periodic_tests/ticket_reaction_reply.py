@@ -30,7 +30,7 @@ async def check_pending_messages(bot):
        for ticket in pending_messages:
            needs_attention = await check_message_reactions(
                bot, 
-               ticket.provider_message_id,  
+               ticket.,  
                ticket.provider_message_id
            )
            
