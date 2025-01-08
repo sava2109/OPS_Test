@@ -5,7 +5,6 @@ from app.external_connections.ops_pa import PGAnswer, PG_PAYMENT_TYPE, PG_TRX_ST
 from app.external_connections.clickup import CLICKUP_CLIENT
 from app.external_connections.postgres import POSTGRES, PostgresShop
 
-
 async def beh_send_auto_ticket(message: Message, trx_details: PGAnswer, shop: PostgresShop, message_full_text: str) -> bool:
     if message.content_type not in ['photo', 'document']:
         await message.reply("@Serggiant, have a look")
@@ -16,25 +15,23 @@ async def beh_send_auto_ticket(message: Message, trx_details: PGAnswer, shop: Po
     local_file_paths = []
 
     if message.photo:
-        for idx, photo in enumerate(message.photo):
-            screenshot_url = photo.file_id
+        last_photo = message.photo[-1]
+        screenshot_url = last_photo.file_id
 
-            if not screenshot_url:
-                await message.reply("@Serggiant, have a look")
-                print(f"No screenshot for image {idx}")
-                continue
-
+        if screenshot_url:
             media_group.append(InputMediaPhoto(
                 media=screenshot_url,
-                caption=f"New ticket by transaction ID: {trx_details.trx_id}" if idx == 0 else None
+                caption=f"New ticket by transaction ID: {trx_details.trx_id}"
             ))
 
             file = await message.bot.get_file(screenshot_url)
             if not os.path.exists("tmp/img/"):
                 os.makedirs("tmp/img/")
-            file_local_path = f"tmp/img/ss{trx_details.trx_id}_{idx + 1}.jpg"
+            file_local_path = f"tmp/img/ss{trx_details.trx_id}.jpg"
             await message.bot.download_file(file.file_path, file_local_path)
             local_file_paths.append(file_local_path)
+        else:
+            print("No screenshot available")
 
     if message.document:
         document = message.document
@@ -43,7 +40,7 @@ async def beh_send_auto_ticket(message: Message, trx_details: PGAnswer, shop: Po
 
         media_group.append(InputMediaDocument(
             media=doc_file_id,
-            caption=f"New ticket by transaction ID: {trx_details.trx_id}"
+            caption=f"New ticket by transaction ID: {trx_details.trx_id}" if not media_group else None
         ))
 
         file = await message.bot.get_file(doc_file_id)

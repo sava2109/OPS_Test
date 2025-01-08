@@ -9,15 +9,17 @@ from handlers.transaction_handler import router as transaction_router
 from handlers.setup_handler import router as setup_router
 
 from app.trx_state_machines.trx_state_machine import TRX_STATE_MACHINE, Trx_State_Machine
+from app.periodic_tests.ticket_reaction_reply import check_pending_messages
+from app.periodic_tests.terminal_balance import check_balance
 TRX_STATE_MACHINE = Trx_State_Machine()
-async def routine_checks():
+async def routine_checks(bot):
 
     while True:
         try:
-            print(f"Running hourly task at {datetime.now()} of Checking Tickets")
-            #checking all tickets
+            print(f"Running hourly task at {datetime.now()} of Checking Tickets, bot Messages , Terminal Balances")
             TRX_STATE_MACHINE.update()
-            
+            await check_pending_messages(bot)
+            await check_balance(bot)
         except Exception as e:
             print(f"Error in hourly task: {e}")
         now = datetime.now()
@@ -33,7 +35,7 @@ async def main():
     await asyncio.gather(
         run_bot(bot),
         run_trx_state_machine(bot),
-        routine_checks()
+        routine_checks(bot)
     )
 async def run_bot(bot):
     dp = Dispatcher()

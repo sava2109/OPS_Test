@@ -133,6 +133,32 @@ class Postgres:
 
         return shops
     
+    def get_all_terminals(self) -> list[tuple[int, str]] | None:
+        conn = self._get_connection_keys()
+        cur = conn.cursor()
+
+        try:
+            query = """
+                SELECT terminal_id, pg_api_key 
+                FROM shops_keys
+                WHERE terminal_id IS NOT NULL
+                AND pg_api_key IS NOT NULL;
+            """
+            cur.execute(query)
+            result = cur.fetchall()
+
+            if not result:
+                return None
+
+            return [(row[0], row[1]) for row in result]
+
+        except Exception as e:
+            print(f"Error getting terminals: {e}")
+            return None
+            
+        finally:
+            cur.close()
+            conn.close()
     def get_shop_by_id(self, shop_id:int) -> PostgresShop | None:
         
         conn = self._get_connection()
