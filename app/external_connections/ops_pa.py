@@ -28,7 +28,7 @@ class PGAnswer:
         self.paymentMethod = paymentMethod
         self.terminal = terminal
 
-async def check_status(shop_api_key:str, trx_id:str, message : Message) -> PGAnswer | None:
+async def check_status(shop_api_key:str, trx_id:str) -> PGAnswer | None:
     if shop_api_key == None:
         return None
     url = f"https://app.inops.net/api/v1/payments/{trx_id}"

@@ -14,6 +14,7 @@ async def check_trx(ticket_data: PostgresTicketRequest, bot) -> None:
     shop_data = POSTGRES.get_shop_by_id(ticket_data.shop_id)
     shop_api_key = POSTGRES.get_shop_api_key(shop_data.pg_api_key_id).pg_api_key
     pg_data = await ops_pa.check_status(shop_api_key=shop_api_key, trx_id=ticket_data.trx_id)
+    print(pg_data)
     if pg_data == None:
         print(f"Couldn't check trx request: {ticket_data.id}")
         return

@@ -35,7 +35,7 @@ async def check_balance(bot) -> dict:
                         if balance< threshold:
                             
                             await bot.send_message(
-                            chat_id="ticket.provider_message_id",
+                            chat_id=-1002323088756,
                             text=f"terminal with ID {terminal_id} has low balance : {balance}",
                             
                             )

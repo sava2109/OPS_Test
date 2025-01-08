@@ -17,7 +17,7 @@ async def routine_checks(bot):
     while True:
         try:
             print(f"Running hourly task at {datetime.now()} of Checking Tickets, bot Messages , Terminal Balances")
-            TRX_STATE_MACHINE.update()
+            await TRX_STATE_MACHINE.update()
             await check_pending_messages(bot)
             await check_balance(bot)
         except Exception as e:
