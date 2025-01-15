@@ -7,12 +7,12 @@ from app.external_connections.postgres import POSTGRES, PostgresShop
 async def beh_send_auto_ticket(message: Message, trx_details: PGAnswer, shop: PostgresShop, message_full_text:str) -> bool:
     # Checker for screenshot_url exists
     if message.content_type != 'photo':
-        await message.reply("@Serggiant, have a look")
+        await message.reply("@Serggiant, have a look \n @Serggiant, проверь этот запрос")
         print('no screenshot')
         return False
     screenshot_url = message.photo[-1].file_id
     if not screenshot_url:
-        await message.reply("@Serggiant, have a look")
+        await message.reply("@Serggiant, have a look \n @Serggiant, проверь этот запрос")
         print('no screenshot')
         return False
 
@@ -20,7 +20,7 @@ async def beh_send_auto_ticket(message: Message, trx_details: PGAnswer, shop: Po
     terminal_index = int(trx_details.terminal.split('_')[-1])
     provider = POSTGRES.get_provider_by_terminal_index(terminal_index)
     if provider == None:
-        await message.reply("@Serggiant, I couldn't solve it")
+        await message.reply("@Serggiant, I couldn't solve i \n @Serggiant, проверь этот запрос")
         print(f"State 701. Trx {trx_details.trx_id}, didn't find provider by terminal_id: {terminal_index}")
         return False
     prov_mes = await message.bot.send_photo(chat_id=provider.support_chat_id, photo=screenshot_url,

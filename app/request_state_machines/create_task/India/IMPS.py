@@ -25,7 +25,8 @@ async def run_state(message: Message, trx_details: PGAnswer, shop: PostgresShop,
 
 async def state_COMPLETED(message: Message, trx_details: PGAnswer, shop: PostgresShop, message_full_text:str) -> bool:
     await message.react(reaction=[ReactionTypeEmoji(emoji="👍")])
-    await message.reply("Transaction status: COMPLETED.")
+    await message.reply("""Transaction status: COMPLETED. \n
+                        Статус транзакции: COMPLETED""")
     return True
 async def state_DECLINED(message: Message, trx_details: PGAnswer, shop: PostgresShop, message_full_text:str) -> bool:
     terminal_id = trx_details.terminal.split('_')[-1]
@@ -49,14 +50,20 @@ async def state_PENDING(message: Message, trx_details: PGAnswer, shop: PostgresS
             return success
     print(f"Terminal: {terminal_id}. Not found in states")
 async def state_CANCELLED(message: Message, trx_details: PGAnswer, shop: PostgresShop, message_full_text:str) -> bool:
-    await message.reply("Transaction status: CANCELLED.\n"
-                        "The specified transaction by this ID had not gone to the bank and had been closed\n"
-                        "May you doublecheck transaction ID and send NEW ticket request pls")
+    await message.reply("""Transaction status: CANCELLED.\n
+                        The specified transaction by this ID had not gone to the bank and had been closed\n
+                        May you doublecheck transaction ID and send NEW ticket request pls \n
+                        Статус транзакции: "CANCELLED"\n
+                        Указанная транзакция по данному ID не поступила в банк и была закрыта\n
+                        Перепроверьте, пожалуйста, ID транзакции и отправьте НОВЫЙ запрос""")
     return True
 async def state_CHECKOUT(message: Message, trx_details: PGAnswer, shop: PostgresShop, message_full_text:str) -> bool:
-    await message.reply("Transaction status: CHECKOUT.\n"
-                        "The specified transaction by this ID has not gone to the bank yet\n"
-                        "May you doublecheck transaction ID and send NEW ticket request pls")
+    await message.reply("""Transaction status: CHECKOUT.\n
+                    The specified transaction by this ID has not gone to the bank yet\n
+                        May you doublecheck transaction ID and send NEW ticket request pls \n
+                        Статус транзакции: "CHECKOUT"\n
+                        Указанная транзакция по данному ID еще не поступила в банк\n
+                        Перепроверьте, пожалуйста, ID транзакции и отправьте НОВЫЙ запрос""")
     return True
 async def state_AWAITING_WEBHOOK(message: Message, trx_details: PGAnswer, shop: PostgresShop, message_full_text:str) -> bool:
     terminal_id = trx_details.terminal.split('_')[-1]

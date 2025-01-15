@@ -14,7 +14,7 @@ from app.periodic_tests.terminal_balance import check_balance
 from app.periodic_tests.clicup_tickets import clickup_State_Machine
 TRX_STATE_MACHINE = Trx_State_Machine()
 CLICKUP_STATE_MACHINE = clickup_State_Machine()
-async def routine_checks_month(bot):
+async def routine_checks_month():
     while True:
         try:
             print(f"Running monthly task at {datetime.now()}")
@@ -33,7 +33,6 @@ async def routine_checks_hour(bot):
     while True:
         try:
             print(f"Running hourly task at {datetime.now()}")
-            await CLICKUP_STATE_MACHINE.update()
             await check_balance(bot)
         except Exception as e:
             print(f"Error in hourly task: {e}")
@@ -51,7 +50,7 @@ async def main():
         run_bot(bot),
         run_trx_state_machine(bot),
         routine_checks_hour(bot),
-        routine_checks_month(bot)
+        routine_checks_month()
     )
 async def run_bot(bot):
     dp = Dispatcher()

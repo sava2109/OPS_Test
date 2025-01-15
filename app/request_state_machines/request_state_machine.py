@@ -17,7 +17,8 @@ async def run_state_machine(message: Message, transaction_id: str, shops: list[P
             shop = possible_shop
             break
     if shop is None:
-        await message.reply("This transaction ID doesn't exists\nTry again with correct OPS transaction ID inside")
+        await message.reply("""This transaction ID doesn't exists\nTry again with correct OPS transaction ID inside \n Не удалось найти данный ID транзакции
+Перепроверьте, пожалуйста, ID транзакции и отправьте НОВЫЙ запрос""")
         return False
 
     match pg_answer.paymentMethod:

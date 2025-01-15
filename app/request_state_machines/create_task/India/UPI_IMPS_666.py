@@ -7,7 +7,7 @@ from app.external_connections.postgres import POSTGRES, PostgresShop
 
 async def beh_send_auto_ticket(message: Message, trx_details: PGAnswer, shop: PostgresShop, message_full_text: str) -> bool:
     if message.content_type not in ['photo', 'document']:
-        await message.reply("@Serggiant, have a look")
+        await message.reply("@Serggiant, have a look \n @Serggiant, проверь этот запрос")
         print('No valid attachments found')
         return False
 
@@ -51,14 +51,14 @@ async def beh_send_auto_ticket(message: Message, trx_details: PGAnswer, shop: Po
         local_file_paths.append(file_local_path)
 
     if not media_group:
-        await message.reply("@Serggiant, have a look")
+        await message.reply("@Serggiant, have a look \n @Serggiant, проверь этот запрос")
         print('No valid media found')
         return False
 
     terminal_index = 666
     provider = POSTGRES.get_provider_by_terminal_index(terminal_index)
     if provider is None:
-        await message.reply("@Serggiant, I couldn't solve it")
+        await message.reply("@Serggiant, I couldn't solve i \n @Serggiant, проверь этот запрос")
         print(f"State 666. Trx {trx_details.trx_id}, didn't find provider by terminal_id: {terminal_index}")
         return False
 
