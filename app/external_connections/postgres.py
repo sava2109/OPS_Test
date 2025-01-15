@@ -101,6 +101,7 @@ class Postgres:
 
         conn.commit()
         cur.close()
+        self._close_connection()
         return
     
     def get_shops_by_support_chat_id(self, support_chat_id:int) -> list[PostgresShop] | None:
@@ -130,7 +131,8 @@ class Postgres:
                                 notification_chat_id=row[6],
                                 pg_api_key_id=row[7])
             shops.append(shop)
-
+			
+        self._close_connection()
         return shops
     
     def get_all_terminals(self) -> list[tuple[int, str]] | None:
@@ -158,7 +160,7 @@ class Postgres:
             
         finally:
             cur.close()
-            conn.close()
+            self._close_connection_keys()
     
     def get_shop_by_id(self, shop_id:int) -> PostgresShop | None:
         
@@ -185,6 +187,7 @@ class Postgres:
                                 support_chat_id=row[5],
                                 notification_chat_id=row[6],
                                 pg_api_key_id=row[7])
+            self._close_connection()
             return shop
 
     def create_shop_api_key(self, shop_name:str, pg_id:int, pg_api_key:str) -> None:
@@ -200,7 +203,7 @@ class Postgres:
         cur.execute(query, (shop_name, pg_id, pg_api_key))
 
         conn.commit()
-        cur.close()
+        self._close_connection()
         
 
         return
@@ -217,7 +220,7 @@ class Postgres:
         result = cur.fetchall()
 
         cur.close()
-        
+        self._close_connection()
 
         if result == None:
             return None
@@ -242,7 +245,7 @@ class Postgres:
 
         conn.commit()
         cur.close()
-        
+        self._close_connection()
 
         return
     
@@ -270,6 +273,7 @@ class Postgres:
                                         terminal_index=row[3],
                                         cu_list_id=row[4],
                                         support_chat_id=row[5])
+            self._close_connection()
             return provider
 
     def create_new_ticket_request(self, trx_id: str, shop_data: PostgresShop, shop_mes_id: int, provider_data: PostgresProvider,
@@ -292,7 +296,7 @@ class Postgres:
 
         conn.commit()
         cur.close()
-        
+        self._close_connection()
 
         return True
     
@@ -308,7 +312,7 @@ class Postgres:
         result = cur.fetchall()
 
         cur.close()
-        
+        self._close_connection()
 
         if result == None:
             return None
@@ -341,7 +345,7 @@ class Postgres:
         result = cur.fetchall()
 
         cur.close()
-        
+        self._close_connection()
 
         if result == None:
             return None
@@ -377,7 +381,7 @@ class Postgres:
         conn.commit()
 
         cur.close()
-        
+        self._close_connection()
 
         return True
 
@@ -394,7 +398,7 @@ class Postgres:
         conn.commit()
 
         cur.close()
-        
+        self._close_connection()
 
         return True
 
@@ -410,7 +414,7 @@ class Postgres:
         result = cur.fetchall()
 
         cur.close()
-        
+        self._close_connection()
 
         if result == None:
             return None
@@ -443,6 +447,7 @@ class Postgres:
         finally:
             cur.close()
             conn.close()
+            self._close_connection()
         
     def __del__(self):
         """Ensure the connection is closed when the object is deleted."""
