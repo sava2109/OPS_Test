@@ -135,13 +135,31 @@ class Postgres:
         self._close_connection()
         return shops
     
+    def get_assignee(self, id:int) -> list[PostgresShop] | None:
+        
+        conn = self._get_connection()
+
+        cur = conn.cursor()
+
+        query = "SELECT * FROM assignees WHERE id = %s"
+        cur.execute(query, (id,))
+
+        result = cur.fetchone()
+
+        cur.close()
+        if result == None:
+            return None
+			
+        self._close_connection()
+        return result
+    
     def get_all_terminals(self) -> list[tuple[int, str]] | None:
         conn = self._get_connection_keys()
         cur = conn.cursor()
 
         try:
             query = """
-                SELECT terminal_id, pg_api_key 
+                SELECT terminal_id, pg_api_key, id 
                 FROM shop_keys
                 WHERE terminal_id IS NOT NULL
                 AND pg_api_key IS NOT NULL;
@@ -152,7 +170,7 @@ class Postgres:
             if not result:
                 return None
 
-            return [(row[0], row[1]) for row in result]
+            return [(row[0], row[1], row[3]) for row in result]
 
         except Exception as e:
             print(f"Error getting terminals: {e}")
@@ -189,6 +207,23 @@ class Postgres:
                                 pg_api_key_id=row[7])
             self._close_connection()
             return shop
+
+    def get_chat_id(self, id):
+        conn = self._get_connection()
+        cur = conn.cursor()
+
+        query = "SELECT support_chat_id FROM shops WHERE id = %s"
+        cur.execute(query, (id,))
+
+        result = cur.fetchone()
+
+        cur.close()
+        self._close_connection()
+
+        if result is None:
+            return None
+
+        return result[0]
 
     def create_shop_api_key(self, shop_name:str, pg_id:int, pg_api_key:str) -> None:
         

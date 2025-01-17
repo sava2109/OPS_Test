@@ -13,7 +13,7 @@ async def check_balance(bot) -> dict:
        if not terminals:
            return {}
 
-       for terminal_id, api_key in terminals:
+       for terminal_id, api_key,id in terminals:
            url = f"https://app.inops.net/api/v1/terminals/getBalance/{terminal_id}"
            headers = {
                'Authorization': f'Bearer {api_key}',
@@ -30,9 +30,10 @@ async def check_balance(bot) -> dict:
                    status = int(data.get('status', 0))
                    if status == 200:
                         balance = data['result'][0]['balance']['amount']
+                        chat_id = POSTGRES.get_chat_id(id=id)
                         if balance< threshold:
                             await bot.send_message(
-                            chat_id=-1002323088756,
+                            chat_id=chat_id,
                             text=f"terminal with ID {terminal_id} has low balance : {balance}",
                             
                             )
