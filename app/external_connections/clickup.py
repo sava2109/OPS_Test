@@ -3,7 +3,7 @@ from enum import Enum
 
 import requests
 from dotenv import load_dotenv
-
+from app.external_connections.postgres import POSTGRES
 
 class CU_TaskStatus(Enum):
     TO_DO = "TO DO"
@@ -102,6 +102,7 @@ class ClickUpClient:
         }
 
         response = requests.put(url, json=payload, headers=headers, params=query)
+    
     async def update_task_tag(self, task_id, new_tag="manual"):
         tags_url = f"{self.base_url}/task/{task_id}/tag/{new_tag}"
         
@@ -121,27 +122,36 @@ class ClickUpClient:
         
         return post_response.json()
     
-    async def update_task_assignee(self, task_id,assignee_id=89657945):
-        tags_url = f"{self.base_url}/task/{task_id}"
-        
-        headers = {
-            "Content-Type": "application/json",
-            "Authorization": self.token,
-            "accept": "application/json"
-        }
-        payload = {
-         "assignees": {
-                 "add":[89657945]
-        }
-        }
-        # Fetch the existing tags for the task
-        post_response = requests.post(tags_url, headers=headers)
-        if post_response.status_code != 200:
-            raise Exception(f"Failed to retrieve task {task_id}: {post_response.text}")
+    async def update_task_assignee(self, task_id):
 
-        put_respone = requests.put( f"{self.base_url}/task/{task_id}", headers=headers,json=payload)    
-        print(put_respone.status_code)
-        
-        return post_response.json()
+        tags_url = f"{self.base_url}/task/{task_id}"
+
+        headers = {
+        "Content-Type": "application/json",
+        "Authorization": self.token,
+        "accept": "application/json"
+        }
+
+        try:
+            all_assignees = POSTGRES.get_all_assignees()
+            if not all_assignees:
+                raise Exception("No assignees found in the database.")
+
+            payload = {
+				"assignees": {
+					"add": all_assignees
+				}
+			}
+
+            post_response = requests.post(tags_url, headers=headers)
+            if post_response.status_code != 200:
+                raise Exception(f"Failed to retrieve task {task_id}: {post_response.text}")
+
+            put_response = requests.put(f"{self.base_url}/task/{task_id}", headers=headers, json=payload)
+
+            return put_response.json()
+        except Exception as e:
+            print(f"Error updating task assignees: {e}")
+            return {"error": str(e)}
 
 CLICKUP_CLIENT = ClickUpClient()

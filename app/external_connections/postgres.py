@@ -188,6 +188,25 @@ class Postgres:
             print(f"Error deleting assignee: {e}")
             return False
     
+    def get_all_assignees(self) -> list[str]:
+        try:
+            conn = self._get_connection()
+            cur = conn.cursor()
+
+            query = "SELECT clickup_id FROM assignees"
+            cur.execute(query)
+
+            results = cur.fetchall()
+
+            cur.close()
+            self._close_connection()
+
+            clickup_ids = [row[0] for row in results]
+            return clickup_ids
+        except Exception as e:
+            print(f"Error retrieving assignees: {e}")
+            return []
+    
     def get_all_terminals(self) -> list[tuple[int, str]] | None:
         conn = self._get_connection_keys()
         cur = conn.cursor()
