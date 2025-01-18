@@ -153,6 +153,41 @@ class Postgres:
         self._close_connection()
         return result
     
+    def create_assignee(self, clickup_id: str) -> bool:
+
+        try:
+            conn = self._get_connection()
+            cur = conn.cursor()
+
+            query = "INSERT INTO assignees (clickup_id) VALUES ( %s)"
+            cur.execute(query, (clickup_id))
+			
+            conn.commit()
+            cur.close()
+            self._close_connection()
+            return True
+        except Exception as e:
+            print(f"Error creating assignee: {e}")
+            return False
+
+    def delete_assignee(self, clickup_id: str) -> bool:
+        
+        try:
+            conn = self._get_connection()
+            cur = conn.cursor()
+
+            query = "DELETE FROM assignees WHERE clickup_id = %s"
+            cur.execute(query, (clickup_id,))
+        
+            conn.commit() 
+            cur.close()
+            self._close_connection()
+        
+            return cur.rowcount > 0
+        except Exception as e:
+            print(f"Error deleting assignee: {e}")
+            return False
+    
     def get_all_terminals(self) -> list[tuple[int, str]] | None:
         conn = self._get_connection_keys()
         cur = conn.cursor()
