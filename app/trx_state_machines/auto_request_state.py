@@ -19,7 +19,6 @@ async def check_trx(ticket_data: PostgresTicketRequest, bot) -> None:
         return
     
     if pg_data.state == PG_TRX_STATUS.COMPLETED.value:
-        print('yes')
         # Change DB Request status to CLOSE
         if not ticket_data.closed:
             db_patch_result = POSTGRES.close_ticket(ticket_data.id, True)
