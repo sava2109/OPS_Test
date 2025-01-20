@@ -160,7 +160,7 @@ class Postgres:
             cur = conn.cursor()
 
             query = "INSERT INTO assignees (clickup_id) VALUES ( %s)"
-            cur.execute(query, (clickup_id))
+            cur.execute(query, (clickup_id,))
 			
             conn.commit()
             cur.close()

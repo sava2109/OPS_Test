@@ -33,7 +33,6 @@ async def add_assignee(message: types.Message):
         if len(command_args) < 2:
             await message.answer('Please provide a ClickUp ID. Usage: /addassignee <ClickUp ID>')
             return
-
         clickup_id = command_args[1]
         if POSTGRES.create_assignee(clickup_id=clickup_id):
             await message.answer(f'Assignee created with ClickUp ID: {clickup_id}')
